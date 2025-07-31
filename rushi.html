@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecureChat Pro - End-to-End Encrypted Messaging</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  .header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+  }
+
+  .card h2 {
+    color: #4c51bf;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+  }
+
+  .btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 200px;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #51cf66, #40c057);
+  }
+
+  .input-group {
+    margin-bottom: 20px;
+  }
+
+  .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: rgba(255,255,255,0.8);
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+  }
+
+  .textarea {
+    min-height: 100px;
+    resize: vertical;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  }
+
+  .login-container {
+    max-width: 400px;
+    margin: 100px auto;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+  .status-success { background: #51cf66; }
+  .status-warning { background: #ffd43b; }
+  .status-error { background: #ff6b6b; }
+
+  .key-display {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    word-break: break-all;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .message-bubble {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 20px;
+    margin: 10px 0;
+    max-width: 80%;
+    position: relative;
+  }
+
+  .message-bubble.received {
+    background: #f1f3f4;
+    color: #333;
+    margin-left: auto;
+  }
+
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    z-index: 1000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+  }
+
+  .notification.show {
+    transform: translateX(0);
+  }
+
+  .notification.success { background: #51cf66; }
+  .notification.error { background: #ff6b6b; }
+  .notification.info { background: #339af0; }
+
+  .tabs {
+    display: flex;
+    margin-bottom: 30px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 5px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-weight: 600;
+  }
+
+  .tab.active {
+    background: white;
+    color: #667eea;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  @media (max-width: 768px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .header h1 {
+      font-size: 2rem;
+    }
+    
+    .card {
+      padding: 20px;
+    }
+    
+    .container {
+      padding: 10px;
+    }
+  }
+
+  .loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .file-drop-zone {
+    border: 2px dashed #667eea;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .file-drop-zone:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #5a67d8;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<div id="loginSection" class="login-container">
+  <div class="card">
+    <div class="header">
+      <h1>🔐 SecureChat Pro</h1>
+      <p>End-to-End Encrypted Messaging</p>
+    </div>
+    
+    <div class="input-group">
+      <label for="passwordInput">🔑 Enter Password</label>
+      <input type="password" id="passwordInput" class="form-control" placeholder="Enter your secure password" />
+    </div>
+    
+    <button id="loginBtn" class="btn" style="width: 100%;">
+      Login Securely
+    </button>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 14px; color: #666;">
+      Default password: <code>rushi0612</code>
+    </div>
+  </div>
+</div>
+
+<div id="appSection" class="hidden">
+  <div class="container">
+    <div class="header">
+      <h1>🔐 SecureChat Pro</h1>
+      <p>Your messages are protected with military-grade encryption</p>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="keys">🔑 Key Management</div>
+      <div class="tab" data-tab="encrypt">🔒 Encrypt</div>
+      <div class="tab" data-tab="decrypt">🔓 Decrypt</div>
+      <div class="tab" data-tab="messages">💬 Messages</div>
+    </div>
+
+    <div id="keysTab" class="tab-content active">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-warning"></span>
+          RSA Key Pair Generation
+        </h2>
+        
+        <div class="input-group">
+          <button id="generateKeysBtn" class="btn">
+            🎲 Generate New Key Pair (2048-bit RSA)
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>📤 Your Public Key (Share this with others)</label>
+          <textarea id="publicKeyDisplay" class="form-control textarea key-display" readonly placeholder="Your public key will appear here..."></textarea>
+          <button id="copyPublicBtn" class="btn btn-success" style="margin-top: 10px;" disabled>
+            📋 Copy Public Key
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>🔐 Your Private Key (Keep this SECRET!)</label>
+          <textarea id="privateKeyDisplay" class="form-control textarea key-display" readonly placeholder="Your private key will appear here..."></textarea>
+          <button id="downloadPrivateBtn" class="btn" style="margin-top: 10px;" disabled>
+            💾 Download Private Key
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>📂 Import Private Key</label>
+          <div class="file-drop-zone" id="keyDropZone">
+            <p>🔑 Drop your private key file here or click to browse</p>
+            <input type="file" id="keyFileInput" accept=".txt,.pem,.key" style="display: none;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="encryptTab" class="tab-content">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-success"></span>
+          Message Encryption
+        </h2>
+
+        <div class="input-group">
+          <label>👤 Recipient's Public Key</label>
+          <textarea id="recipientPublicKey" class="form-control textarea key-display" placeholder="Paste the recipient's public key here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>✍️ Message to Encrypt</label>
+          <textarea id="plainText" class="form-control textarea" placeholder="Type your secret message here..."></textarea>
+          <div style="text-align: right; font-size: 12px; color: #666; margin-top: 5px;">
+            <span id="charCount">0</span> characters
+          </div>
+        </div>
+
+        <div class="input-group">
+          <button id="encryptBtn" class="btn" disabled>
+            🔒 Encrypt Message
+          </button>
+        </div>
+
+        <div class="progress-bar hidden" id="encryptProgress">
+          <div class="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <div id="encryptionResults" class="hidden">
+          <div class="input-group">
+            <label>🔐 Encrypted Message</label>
+            <textarea id="encryptedMessage" class="form-control textarea key-display" readonly></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>🔑 Encrypted AES Key</label>
+            <textarea id="encryptedAESKey" class="form-control textarea key-display" readonly></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>🎲 Initialization Vector (IV)</label>
+            <textarea id="iv" class="form-control key-display" readonly></textarea>
+          </div>
+
+          <button id="copyEncryptedBtn" class="btn btn-success">
+            📋 Copy All Encrypted Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="decryptTab" class="tab-content">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-error"></span>
+          Message Decryption
+        </h2>
+
+        <div class="input-group">
+          <label>🔐 Your Private Key</label>
+          <textarea id="yourPrivateKey" class="form-control textarea key-display" placeholder="Paste your private key here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>🔒 Encrypted Message</label>
+          <textarea id="encMessageForDecryption" class="form-control textarea key-display" placeholder="Paste the encrypted message here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>🔑 Encrypted AES Key</label>
+          <textarea id="encAESKeyForDecryption" class="form-control textarea key-display" placeholder="Paste the encrypted AES key here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>🎲 Initialization Vector (IV)</label>
+          <textarea id="ivForDecryption" class="form-control key-display" placeholder="Paste the IV here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <button id="decryptBtn" class="btn btn-danger" disabled>
+            🔓 Decrypt Message
+          </button>
+        </div>
+
+        <div class="progress-bar hidden" id="decryptProgress">
+          <div class="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <div id="decryptionResults" class="hidden">
+          <div class="input-group">
+            <label>✅ Decrypted Message</label>
+            <textarea id="decryptedMessage" class="form-control textarea" readonly style="background: #f0fff4; border-color: #51cf66;"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="messagesTab" class="tab-content">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-success"></span>
+          Message History
+        </h2>
+        
+        <div id="messageHistory" style="max-height: 400px; overflow-y: auto; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+          <p style="text-align: center; color: #666;">No messages yet. Start encrypting and decrypting messages!</p>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <button id="clearHistoryBtn" class="btn btn-danger">
+            🗑️ Clear History
+          </button>
+          <button id="exportHistoryBtn" class="btn">
+            📤 Export History
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script>
+// Enhanced utility functions
+class CryptoUtils {
+  static async generateRSAKeyPair() {
+    return await window.crypto.subtle.generateKey(
+      {
+        name: "RSA-OAEP",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+      },
+      true,
+      ["encrypt", "decrypt"]
+    );
+  }
+
+  static async exportPublicKey(key) {
+    const spki = await window.crypto.subtle.exportKey("spki", key);
+    return this.arrayBufferToBase64(spki);
+  }
+
+  static async exportPrivateKey(key) {
+    const pk = await window.crypto.subtle.exportKey("pkcs8", key);
+    return this.arrayBufferToBase64(pk);
+  }
+
+  static async importPublicKey(spkiBase64) {
+    const spki = this.base64ToArrayBuffer(spkiBase64);
+    return await window.crypto.subtle.importKey(
+      "spki",
+      spki,
+      { name: "RSA-OAEP", hash: "SHA-256" },
+      true,
+      ["encrypt"]
+    );
+  }
+
+  static async importPrivateKey(pkBase64) {
+    const pk = this.base64ToArrayBuffer(pkBase64);
+    return await window.crypto.subtle.importKey(
+      "pkcs8",
+      pk,
+      { name: "RSA-OAEP", hash: "SHA-256" },
+      true,
+      ["decrypt"]
+    );
+  }
+
+  static async generateAESKey() {
+    return await window.crypto.subtle.generateKey(
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
+  }
+
+  static async encryptAES(aesKey, data) {
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await window.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      aesKey,
+      data
+    );
+    return { encrypted, iv };
+  }
+
+  static async decryptAES(aesKey, encrypted, iv) {
+    return await window.crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv },
+      aesKey,
+      encrypted
+    );
+  }
+
+  static arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary);
+  }
+
+  static base64ToArrayBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+}
+
+// UI Management Class
+class UIManager {
+  static showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 3000);
+  }
+
+  static updateProgress(elementId, percentage) {
+    const progressBar = document.getElementById(elementId);
+    const fill = progressBar.querySelector('.progress-fill');
+    fill.style.width = percentage + '%';
+    
+    if (percentage === 100) {
+      setTimeout(() => {
+        progressBar.classList.add('hidden');
+      }, 500);
+    } else {
+      progressBar.classList.remove('hidden');
+    }
+  }
+
+  static async simulateProgress(elementId, duration = 2000) {
+    return new Promise(resolve => {
+      let progress = 0;
+      const increment = 100 / (duration / 50);
+      
+      const interval = setInterval(() => {
+        progress += increment;
+        this.updateProgress(elementId, Math.min(progress, 100));
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 50);
+    });
+  }
+
+  static addMessageToHistory(type, content, timestamp = new Date()) {
+    const history = document.getElementById('messageHistory');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message-bubble ${type === 'received' ? 'received' : ''}`;
+    
+    const timeStr = timestamp.toLocaleTimeString();
+    messageDiv.innerHTML = `
+      <div style="font-size: 12px; opacity: 0.7; margin-bottom: 5px;">
+        ${type === 'sent' ? '📤 Encrypted' : '📥 Decrypted'} at ${timeStr}
+      </div>
+      <div>${content.substring(0, 100)}${content.length > 100 ? '...' : ''}</div>
+    `;
+    
+    if (history.children.length === 1 && history.children[0].tagName === 'P') {
+      history.innerHTML = '';
+    }
+    
+    history.appendChild(messageDiv);
+    history.scrollTop = history.scrollHeight;
+  }
+
+  static downloadFile(content, filename, type = 'text/plain') {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  static copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      this.showNotification('📋 Copied to clipboard!', 'success');
+    }).catch(() => {
+      this.showNotification('❌ Failed to copy to clipboard', 'error');
+    });
+  }
+}
+
+// Application State
+class AppState {
+  constructor() {
+    this.userKeyPair = null;
+    this.messages = [];
+  }
+
+  setKeyPair(keyPair) {
+    this.userKeyPair = keyPair;
+  }
+
+  addMessage(type, content) {
+    this.messages.push({
+      type,
+      content,
+      timestamp: new Date()
+    });
+    UIManager.addMessageToHistory(type, content);
+  }
+
+  clearMessages() {
+    this.messages = [];
+    document.getElementById('messageHistory').innerHTML = 
+      '<p style="text-align: center; color: #666;">No messages yet. Start encrypting and decrypting messages!</p>';
+  }
+
+  exportMessages() {
+    const data = JSON.stringify(this.messages, null, 2);
+    UIManager.downloadFile(data, 'secure-messages.json', 'application/json');
+  }
+}
+
+const appState = new AppState();
+
+// Event Handlers
+function initializeEventHandlers() {
+  // Login handler
+  document.getElementById('loginBtn').onclick = () => {
+    const password = document.getElementById('passwordInput').value;
+    if (password === 'rushi0612') {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('appSection').classList.remove('hidden');
+      UIManager.showNotification('🎉 Welcome to SecureChat Pro!', 'success');
+    } else {
+      UIManager.showNotification('❌ Invalid password. Try again.', 'error');
+    }
+  };
+
+  // Tab navigation
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.onclick = () => {
+      const tabName = tab.dataset.tab;
+      
+      // Update active tab
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      tab.classList.add('active');
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+    };
+  });
+
+  // Key Generation
+  document.getElementById('generateKeysBtn').onclick = async () => {
+    try {
+      UIManager.showNotification('Generating RSA key pair...', 'info');
+      const keyPair = await CryptoUtils.generateRSAKeyPair();
+      appState.setKeyPair(keyPair);
+
+      const publicKey = await CryptoUtils.exportPublicKey(keyPair.publicKey);
+      const privateKey = await CryptoUtils.exportPrivateKey(keyPair.privateKey);
+
+      document.getElementById('publicKeyDisplay').value = publicKey;
+      document.getElementById('privateKeyDisplay').value = privateKey;
+      document.getElementById('copyPublicBtn').disabled = false;
+      document.getElementById('downloadPrivateBtn').disabled = false;
+      UIManager.showNotification('Key pair generated successfully!', 'success');
+    } catch (error) {
+      console.error('Error generating keys:', error);
+      UIManager.showNotification('Error generating keys. See console for details.', 'error');
+    }
+  };
+
+  // Copy Public Key
+  document.getElementById('copyPublicBtn').onclick = () => {
+    const publicKey = document.getElementById('publicKeyDisplay').value;
+    UIManager.copyToClipboard(publicKey);
+  };
+
+  // Download Private Key
+  document.getElementById('downloadPrivateBtn').onclick = () => {
+    const privateKey = document.getElementById('privateKeyDisplay').value;
+    UIManager.downloadFile(privateKey, 'private_key.pem', 'application/x-pem-file');
+    UIManager.showNotification('Downloading private key...', 'info');
+  };
+
+  // Import Private Key (File Input)
+  document.getElementById('keyFileInput').onchange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const privateKeyBase64 = e.target.result;
+          const privateKey = await CryptoUtils.importPrivateKey(privateKeyBase64);
+          appState.setKeyPair({ privateKey: privateKey });
+          document.getElementById('yourPrivateKey').value = privateKeyBase64;
+          UIManager.showNotification('Private key imported successfully!', 'success');
+        };
+        reader.readAsText(file);
+      } catch (error) {
+        console.error('Error importing private key:', error);
+        UIManager.showNotification('Error importing private key. Make sure it\'s a valid PEM/PKCS8 format.', 'error');
+      }
+    }
+  };
+
+  // Import Private Key (Drag and Drop)
+  const keyDropZone = document.getElementById('keyDropZone');
+  keyDropZone.ondragover = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    keyDropZone.style.backgroundColor = 'rgba(102, 126, 234, 0.2)';
+  };
+  keyDropZone.ondragleave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    keyDropZone.style.backgroundColor = '';
+  };
+  keyDropZone.ondrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    keyDropZone.style.backgroundColor = '';
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      try {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const privateKeyBase64 = event.target.result;
+          const privateKey = await CryptoUtils.importPrivateKey(privateKeyBase64);
+          appState.setKeyPair({ privateKey: privateKey });
+          document.getElementById('yourPrivateKey').value = privateKeyBase64;
+          UIManager.showNotification('Private key imported successfully!', 'success');
+        };
+        reader.readAsText(file);
+      } catch (error) {
+        console.error('Error importing private key:', error);
+        UIManager.showNotification('Error importing private key. Make sure it\'s a valid PEM/PKCS8 format.', 'error');
+      }
+    }
+  };
+  keyDropZone.onclick = () => {
+    document.getElementById('keyFileInput').click();
+  };
+
+
+  // Enable Encrypt button if inputs are present
+  document.getElementById('recipientPublicKey').oninput = 
+  document.getElementById('plainText').oninput = () => {
+    const recipientKey = document.getElementById('recipientPublicKey').value;
+    const message = document.getElementById('plainText').value;
+    document.getElementById('encryptBtn').disabled = !recipientKey || !message;
+    document.getElementById('charCount').textContent = message.length;
+  };
+
+  // Encryption
+  document.getElementById('encryptBtn').onclick = async () => {
+    const recipientPublicKeyBase64 = document.getElementById('recipientPublicKey').value;
+    const plainText = document.getElementById('plainText').value;
+
+    if (!recipientPublicKeyBase64 || !plainText) {
+      UIManager.showNotification('Please provide recipient public key and message.', 'warning');
+      return;
+    }
+
+    try {
+      UIManager.showNotification('Encrypting message...', 'info');
+      UIManager.updateProgress('encryptProgress', 0);
+      await UIManager.simulateProgress('encryptProgress');
+
+      const recipientPublicKey = await CryptoUtils.importPublicKey(recipientPublicKeyBase64);
+      const aesKey = await CryptoUtils.generateAESKey();
+      const exportedAesKey = await window.crypto.subtle.exportKey("raw", aesKey);
+      
+      const encryptedAESKey = await window.crypto.subtle.encrypt(
+        { name: "RSA-OAEP" },
+        recipientPublicKey,
+        exportedAesKey
+      );
+
+      const encodedMessage = new TextEncoder().encode(plainText);
+      const { encrypted, iv } = await CryptoUtils.encryptAES(aesKey, encodedMessage);
+
+      document.getElementById('encryptedMessage').value = CryptoUtils.arrayBufferToBase64(encrypted);
+      document.getElementById('encryptedAESKey').value = CryptoUtils.arrayBufferToBase64(encryptedAESKey);
+      document.getElementById('iv').value = CryptoUtils.arrayBufferToBase64(iv);
+      document.getElementById('encryptionResults').classList.remove('hidden');
+      document.getElementById('copyEncryptedBtn').disabled = false;
+
+      appState.addMessage('sent', plainText);
+      UIManager.showNotification('Message encrypted successfully!', 'success');
+    } catch (error) {
+      console.error('Error encrypting message:', error);
+      UIManager.showNotification('Error encrypting message. Check keys and message format.', 'error');
+    }
+  };
+
+  // Copy Encrypted Data
+  document.getElementById('copyEncryptedBtn').onclick = () => {
+    const encryptedMessage = document.getElementById('encryptedMessage').value;
+    const encryptedAESKey = document.getElementById('encryptedAESKey').value;
+    const iv = document.getElementById('iv').value;
+    const dataToCopy = `Encrypted Message:\n${encryptedMessage}\n\nEncrypted AES Key:\n${encryptedAESKey}\n\nIV:\n${iv}`;
+    UIManager.copyToClipboard(dataToCopy);
+  };
+
+  // Enable Decrypt button if inputs are present
+  document.getElementById('yourPrivateKey').oninput =
+  document.getElementById('encMessageForDecryption').oninput =
+  document.getElementById('encAESKeyForDecryption').oninput =
+  document.getElementById('ivForDecryption').oninput = () => {
+    const privateKey = document.getElementById('yourPrivateKey').value;
+    const encMessage = document.getElementById('encMessageForDecryption').value;
+    const encAESKey = document.getElementById('encAESKeyForDecryption').value;
+    const iv = document.getElementById('ivForDecryption').value;
+    document.getElementById('decryptBtn').disabled = !privateKey || !encMessage || !encAESKey || !iv;
+  };
+
+  // Decryption
+  document.getElementById('decryptBtn').onclick = async () => {
+    const yourPrivateKeyBase64 = document.getElementById('yourPrivateKey').value;
+    const encryptedMessageBase64 = document.getElementById('encMessageForDecryption').value;
+    const encryptedAESKeyBase64 = document.getElementById('encAESKeyForDecryption').value;
+    const ivBase64 = document.getElementById('ivForDecryption').value;
+
+    if (!yourPrivateKeyBase64 || !encryptedMessageBase64 || !encryptedAESKeyBase64 || !ivBase64) {
+      UIManager.showNotification('Please fill all decryption fields.', 'warning');
+      return;
+    }
+
+    try {
+      UIManager.showNotification('Decrypting message...', 'info');
+      UIManager.updateProgress('decryptProgress', 0);
+      await UIManager.simulateProgress('decryptProgress');
+
+      const privateKey = await CryptoUtils.importPrivateKey(yourPrivateKeyBase64);
+      const encryptedAESKeyBuffer = CryptoUtils.base64ToArrayBuffer(encryptedAESKeyBase64);
+      const encryptedMessageBuffer = CryptoUtils.base64ToArrayBuffer(encryptedMessageBase64);
+      const ivBuffer = CryptoUtils.base64ToArrayBuffer(ivBase64);
+
+      const decryptedAESKey = await window.crypto.subtle.decrypt(
+        { name: "RSA-OAEP" },
+        privateKey,
+        encryptedAESKeyBuffer
+      );
+
+      const aesKey = await window.crypto.subtle.importKey(
+        "raw",
+        decryptedAESKey,
+        { name: "AES-GCM" },
+        true,
+        ["decrypt"]
+      );
+
+      const decrypted = await CryptoUtils.decryptAES(aesKey, encryptedMessageBuffer, ivBuffer);
+      const decryptedText = new TextDecoder().decode(decrypted);
+
+      document.getElementById('decryptedMessage').value = decryptedText;
+      document.getElementById('decryptionResults').classList.remove('hidden');
+
+      appState.addMessage('received', decryptedText);
+      UIManager.showNotification('Message decrypted successfully!', 'success');
+    } catch (error) {
+      console.error('Error decrypting message:', error);
+      UIManager.showNotification('Error decrypting message. Check keys, message, AES key, and IV.', 'error');
+    }
+  };
+
+  // Clear Message History
+  document.getElementById('clearHistoryBtn').onclick = () => {
+    appState.clearMessages();
+    UIManager.showNotification('Message history cleared.', 'info');
+  };
+
+  // Export Message History
+  document.getElementById('exportHistoryBtn').onclick = () => {
+    if (appState.messages.length > 0) {
+      appState.exportMessages();
+      UIManager.showNotification('Message history exported.', 'success');
+    } else {
+      UIManager.showNotification('No messages to export.', 'warning');
+    }
+  };
+}
+
+// Initialize event handlers when the DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeEventHandlers);
+
+</script>
+</body>
+</html>
