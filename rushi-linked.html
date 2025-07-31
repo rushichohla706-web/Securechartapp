@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecureChat Pro - End-to-End Encrypted Messaging</title>
+<link rel="stylesheet" href="rushi.css">
+</head>
+<body>
+
+<div id="loginSection" class="login-container">
+  <div class="card">
+    <div class="header">
+      <h1>🔐 SecureChat Pro</h1>
+      <p>End-to-End Encrypted Messaging</p>
+    </div>
+    
+    <div class="input-group">
+      <label for="passwordInput">🔑 Enter Password</label>
+      <input type="password" id="passwordInput" class="form-control" placeholder="Enter your secure password" />
+    </div>
+    
+    <button id="loginBtn" class="btn" style="width: 100%;">
+      Login Securely
+    </button>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 14px; color: #666;">
+      Default password: <code>rushi0612</code>
+    </div>
+  </div>
+</div>
+
+<div id="appSection" class="hidden">
+  <div class="container">
+    <div class="header">
+      <h1>🔐 SecureChat Pro</h1>
+      <p>Your messages are protected with military-grade encryption</p>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="keys">🔑 Key Management</div>
+      <div class="tab" data-tab="encrypt">🔒 Encrypt</div>
+      <div class="tab" data-tab="decrypt">🔓 Decrypt</div>
+      <div class="tab" data-tab="messages">💬 Messages</div>
+    </div>
+
+    <div id="keysTab" class="tab-content active">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-warning"></span>
+          RSA Key Pair Generation
+        </h2>
+        
+        <div class="input-group">
+          <button id="generateKeysBtn" class="btn">
+            🎲 Generate New Key Pair (2048-bit RSA)
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>📤 Your Public Key (Share this with others)</label>
+          <textarea id="publicKeyDisplay" class="form-control textarea key-display" readonly placeholder="Your public key will appear here..."></textarea>
+          <button id="copyPublicBtn" class="btn btn-success" style="margin-top: 10px;" disabled>
+            📋 Copy Public Key
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>🔐 Your Private Key (Keep this SECRET!)</label>
+          <textarea id="privateKeyDisplay" class="form-control textarea key-display" readonly placeholder="Your private key will appear here..."></textarea>
+          <button id="downloadPrivateBtn" class="btn" style="margin-top: 10px;" disabled>
+            💾 Download Private Key
+          </button>
+        </div>
+
+        <div class="input-group">
+          <label>📂 Import Private Key</label>
+          <div class="file-drop-zone" id="keyDropZone">
+            <p>🔑 Drop your private key file here or click to browse</p>
+            <input type="file" id="keyFileInput" accept=".txt,.pem,.key" style="display: none;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="encryptTab" class="tab-content">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-success"></span>
+          Message Encryption
+        </h2>
+
+        <div class="input-group">
+          <label>👤 Recipient's Public Key</label>
+          <textarea id="recipientPublicKey" class="form-control textarea key-display" placeholder="Paste the recipient's public key here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>✍️ Message to Encrypt</label>
+          <textarea id="plainText" class="form-control textarea" placeholder="Type your secret message here..."></textarea>
+          <div style="text-align: right; font-size: 12px; color: #666; margin-top: 5px;">
+            <span id="charCount">0</span> characters
+          </div>
+        </div>
+
+        <div class="input-group">
+          <button id="encryptBtn" class="btn" disabled>
+            🔒 Encrypt Message
+          </button>
+        </div>
+
+        <div class="progress-bar hidden" id="encryptProgress">
+          <div class="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <div id="encryptionResults" class="hidden">
+          <div class="input-group">
+            <label>🔐 Encrypted Message</label>
+            <textarea id="encryptedMessage" class="form-control textarea key-display" readonly></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>🔑 Encrypted AES Key</label>
+            <textarea id="encryptedAESKey" class="form-control textarea key-display" readonly></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>🎲 Initialization Vector (IV)</label>
+            <textarea id="iv" class="form-control key-display" readonly></textarea>
+          </div>
+
+          <button id="copyEncryptedBtn" class="btn btn-success">
+            📋 Copy All Encrypted Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="decryptTab" class="tab-content">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-error"></span>
+          Message Decryption
+        </h2>
+
+        <div class="input-group">
+          <label>🔐 Your Private Key</label>
+          <textarea id="yourPrivateKey" class="form-control textarea key-display" placeholder="Paste your private key here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>🔒 Encrypted Message</label>
+          <textarea id="encMessageForDecryption" class="form-control textarea key-display" placeholder="Paste the encrypted message here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>🔑 Encrypted AES Key</label>
+          <textarea id="encAESKeyForDecryption" class="form-control textarea key-display" placeholder="Paste the encrypted AES key here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <label>🎲 Initialization Vector (IV)</label>
+          <textarea id="ivForDecryption" class="form-control key-display" placeholder="Paste the IV here..."></textarea>
+        </div>
+
+        <div class="input-group">
+          <button id="decryptBtn" class="btn btn-danger" disabled>
+            🔓 Decrypt Message
+          </button>
+        </div>
+
+        <div class="progress-bar hidden" id="decryptProgress">
+          <div class="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <div id="decryptionResults" class="hidden">
+          <div class="input-group">
+            <label>✅ Decrypted Message</label>
+            <textarea id="decryptedMessage" class="form-control textarea" readonly style="background: #f0fff4; border-color: #51cf66;"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="messagesTab" class="tab-content">
+      <div class="card">
+        <h2>
+          <span class="status-indicator status-success"></span>
+          Message History
+        </h2>
+        
+        <div id="messageHistory" style="max-height: 400px; overflow-y: auto; padding: 20px; background: #f8f9fa; border-radius: 12px;">
+          <p style="text-align: center; color: #666;">No messages yet. Start encrypting and decrypting messages!</p>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <button id="clearHistoryBtn" class="btn btn-danger">
+            🗑️ Clear History
+          </button>
+          <button id="exportHistoryBtn" class="btn">
+            📤 Export History
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="notification" class="notification"></div>
+
+<script src="rushi.js"></script>
+</body>
+</html>
